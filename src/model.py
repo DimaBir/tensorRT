@@ -26,7 +26,7 @@ class DistilBERTModel:
         # Convert the PyTorch model to ONNX format
         torch.onnx.export(self.model, (inputs["input_ids"], inputs["attention_mask"]), onnx_path, verbose=True, opset_version=11, input_names=['input_ids', 'attention_mask'], output_names=['output'])
 
-    def build_engine(onnx_file_path, fp16_mode=False):
+    def build_engine(self, onnx_file_path, fp16_mode=False):
         # Create a TensorRT logger
         TRT_LOGGER = trt.Logger(trt.Logger.WARNING)
 
