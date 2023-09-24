@@ -34,7 +34,7 @@ class DistilBERTModel:
         builder = trt.Builder(TRT_LOGGER)
 
         # Create a network
-        network = builder.create_network()
+        network = builder.create_network(1 << int(trt.NetworkDefinitionCreationFlag.EXPLICIT_BATCH))
 
         # Create a parser
         parser = trt.OnnxParser(network, TRT_LOGGER)
@@ -61,6 +61,11 @@ class DistilBERTModel:
         # Perform inference using the TensorRT engine
         inputs, outputs, bindings = [], [], []
         stream = cuda.Stream()
+
+        if engine is None:
+            print("Error: Engine could not be created.")
+            return
+
         context = engine.create_execution_context()
 
         # Allocate device memory for inputs and outputs
