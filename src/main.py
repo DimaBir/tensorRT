@@ -56,7 +56,7 @@ def main():
         inputs['input_ids'].squeeze().tolist(),
         model.tokenizer
     )
-    logging.info(f"PyTorch Answer: {pytorch_answer}")
+    print(f"PyTorch Answer: {pytorch_answer}")
 
     # Convert the PyTorch model to ONNX format
     onnx_path = "distilbert.onnx"
@@ -71,7 +71,7 @@ def main():
     # Convert TensorRT FP32 output to answer
     trt_fp32_answer = logits_to_answer(output_trt_fp32[0], output_trt_fp32[1], inputs['input_ids'].squeeze().tolist(),
                                        model.tokenizer)
-    logging.info(f"TensorRT FP32 Answer: {trt_fp32_answer}")
+    print(f"TensorRT FP32 Answer: {trt_fp32_answer}")
 
     # Build a TensorRT engine with FP16 precision and perform inference
     engine_fp16 = model.build_engine(onnx_path, fp16_mode=True)
@@ -82,7 +82,7 @@ def main():
     # Convert TensorRT FP16 output to answer
     trt_fp16_answer = logits_to_answer(output_trt_fp16[0], output_trt_fp16[1], inputs['input_ids'].squeeze().tolist(),
                                        model.tokenizer)
-    logging.info(f"TensorRT FP16 Answer: {trt_fp16_answer}")
+    print(f"TensorRT FP16 Answer: {trt_fp16_answer}")
 
     # Print the outputs from different inference methods for comparison
     logging.info("PyTorch Answer:", pytorch_answer)
