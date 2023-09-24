@@ -3,7 +3,7 @@ import transformers
 import onnx
 import tensorrt as trt
 import pycuda.driver as cuda
-import pycuda.autoinit  # Necessary for using CUDA driver
+import pycuda.autoinit
 
 
 class DistilBERTModel:
@@ -12,6 +12,10 @@ class DistilBERTModel:
         self.tokenizer = transformers.DistilBertTokenizer.from_pretrained(model_name)
         self.model = transformers.AutoModelForQuestionAnswering.from_pretrained(model_name)
         self.trt_engine = None
+        self.model_name = model_name
+
+    def get_model_name(self):
+        return self.model_name
 
     def tokenize(self, question, context):
         # Tokenize the input question and context
