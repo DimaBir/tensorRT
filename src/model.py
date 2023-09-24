@@ -24,14 +24,10 @@ class DistilBERTModel:
         return self.tokenizer(question, context, return_tensors="pt")
 
     def infer_pytorch(self, inputs):
-        # Check if CUDA is available
-        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-
-        # Move model to the appropriate device
-        self.model.to(device)
+        self.model.to(self.device)
 
         # Move inputs to the appropriate device
-        inputs = {key: value.to(device) for key, value in inputs.items()}
+        inputs = {key: value.to(self.device) for key, value in inputs.items()}
 
         # Perform inference
         with torch.no_grad():
@@ -117,4 +113,4 @@ class DistilBERTModel:
         stream.synchronize()
 
         # Return the output data
-        return outputs[0]['host']
+        return outputs[0]['host'], outputs[1]['host']  # Return both outputs

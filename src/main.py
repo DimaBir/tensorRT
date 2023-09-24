@@ -69,22 +69,24 @@ def main():
     # Build a TensorRT engine with FP32 precision and perform inference
     engine_fp32 = model.build_engine(onnx_path, fp16_mode=False)
     start_time = time.time()
-    output_trt_fp32 = model.infer_tensorrt(engine_fp32, inputs)
+    start_logits_trt_fp32, end_logits_trt_fp32 = model.infer_tensorrt(engine_fp32, inputs)
     logging.info(f"TensorRT FP32 Inference Time: {time.time() - start_time}")
 
     # Convert TensorRT FP32 output to answer
-    trt_fp32_answer = logits_to_answer(output_trt_fp32[0], output_trt_fp32[1], inputs['input_ids'].squeeze().tolist(),
+    trt_fp32_answer = logits_to_answer(start_logits_trt_fp32, end_logits_trt_fp32,
+                                       inputs['input_ids'].squeeze().tolist(),
                                        model.tokenizer)
     print(f"TensorRT FP32 Answer: {trt_fp32_answer}")
 
     # Build a TensorRT engine with FP16 precision and perform inference
     engine_fp16 = model.build_engine(onnx_path, fp16_mode=True)
     start_time = time.time()
-    output_trt_fp16 = model.infer_tensorrt(engine_fp16, inputs)
+    start_logits_trt_fp16, end_logits_trt_fp16 = model.infer_tensorrt(engine_fp16, inputs)
     logging.info(f"TensorRT FP16 Inference Time: {time.time() - start_time}")
 
     # Convert TensorRT FP16 output to answer
-    trt_fp16_answer = logits_to_answer(output_trt_fp16[0], output_trt_fp16[1], inputs['input_ids'].squeeze().tolist(),
+    trt_fp16_answer = logits_to_answer(start_logits_trt_fp16, end_logits_trt_fp16,
+                                       inputs['input_ids'].squeeze().tolist(),
                                        model.tokenizer)
     print(f"TensorRT FP16 Answer: {trt_fp16_answer}")
 
