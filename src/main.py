@@ -19,10 +19,15 @@ def logits_to_answer(start_logits, end_logits, input_ids, tokenizer):
     if start_idx > end_idx:
         start_idx, end_idx = end_idx, start_idx
 
-    # Extract the answer tokens
+    # Extract the answer tokens and filter out special tokens
     answer_tokens = tokenizer.convert_ids_to_tokens(input_ids[start_idx:end_idx + 1])
+    answer_tokens = [token for token in answer_tokens if token not in ['[CLS]', '[SEP]']]
 
     print("Answer Tokens:", answer_tokens)  # Debugging line
+
+    # If no answer tokens are left after filtering, return a default message
+    if not answer_tokens:
+        return "No answer found."
 
     # Convert tokens to string
     answer = tokenizer.convert_tokens_to_string(answer_tokens)
