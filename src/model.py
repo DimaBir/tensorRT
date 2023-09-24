@@ -102,6 +102,9 @@ class DistilBERTModel:
             else:
                 outputs.append({'host': host_mem, 'device': cuda_mem})
 
+        inputs[0]['host'][:] = inputs["input_ids"].cpu().numpy()
+        inputs[1]['host'][:] = inputs["attention_mask"].cpu().numpy()
+
         # Transfer input data to the GPU
         cuda.memcpy_htod_async(inputs[0]['device'], inputs[0]['host'], stream)
         cuda.memcpy_htod_async(inputs[1]['device'], inputs[1]['host'], stream)
@@ -110,6 +113,7 @@ class DistilBERTModel:
         stream.synchronize()
         context.execute_async(bindings=bindings, stream_handle=stream.handle)
         cuda.memcpy_dtoh_async(outputs[0]['host'], outputs[0]['device'], stream)
+        cuda.memcpy_dtoh_async(outputs[1]['host'], outputs[1]['device'], stream)
         stream.synchronize()
 
         # Return the output data
