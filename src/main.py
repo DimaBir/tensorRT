@@ -6,24 +6,18 @@ from model import DistilBERTModel
 
 
 def logits_to_answer(start_logits, end_logits, input_ids, tokenizer):
-    print("Start Logits:", start_logits)  # Debugging line
-    print("End Logits:", end_logits)  # Debugging line
+    # Calculate the best answer span
+    best_start, best_end, best_score = -1, -1, float("-inf")
 
-    start_idx = np.argmax(start_logits)
-    end_idx = np.argmax(end_logits)
-
-    print("Start Index:", start_idx)  # Debugging line
-    print("End Index:", end_idx)  # Debugging line
-
-    # Ensure start_idx is not greater than end_idx
-    if start_idx > end_idx:
-        start_idx, end_idx = end_idx, start_idx
+    for i in range(len(start_logits)):
+        for j in range(i, len(end_logits)):
+            span_score = start_logits[i] + end_logits[j]
+            if span_score > best_score:
+                best_start, best_end, best_score = i, j, span_score
 
     # Extract the answer tokens and filter out special tokens
-    answer_tokens = tokenizer.convert_ids_to_tokens(input_ids[start_idx:end_idx + 1])
+    answer_tokens = tokenizer.convert_ids_to_tokens(input_ids[best_start : best_end + 1])
     answer_tokens = [token for token in answer_tokens if token not in ['[CLS]', '[SEP]']]
-
-    print("Answer Tokens:", answer_tokens)  # Debugging line
 
     # If no answer tokens are left after filtering, return a default message
     if not answer_tokens:
@@ -32,6 +26,7 @@ def logits_to_answer(start_logits, end_logits, input_ids, tokenizer):
     # Convert tokens to string
     answer = tokenizer.convert_tokens_to_string(answer_tokens)
     return answer
+
 
 
 def main():
