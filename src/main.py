@@ -1,8 +1,8 @@
 import numpy as np
 import logging
 import time
-from transformers import AutoTokenizer
-from model import DistilBERTModel  # Import your model class
+
+from model import DistilBERTModel
 
 
 def logits_to_answer(start_logits, end_logits, input_ids, tokenizer):
@@ -42,7 +42,6 @@ def main():
 
     # Tokenize the input
     inputs = model.tokenize(question, context)
-    # tokenizer = AutoTokenizer.from_pretrained(model.get_model_name())
 
     # Perform inference using PyTorch and measure the time taken
     start_time = time.time()
