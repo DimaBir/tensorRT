@@ -22,9 +22,20 @@ class DistilBERTModel:
         return self.tokenizer(question, context, return_tensors="pt")
 
     def infer_pytorch(self, inputs):
-        # Perform inference using the PyTorch model
+        # Check if CUDA is available
+        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+        # Move model to the appropriate device
+        self.model.to(device)
+
+        # Move inputs to the appropriate device
+        inputs = {key: value.to(device) for key, value in inputs.items()}
+
+        # Perform inference
         with torch.no_grad():
-            return self.model(**inputs)
+            output = self.model(**inputs)
+
+        return output
 
     def convert_to_onnx(self, onnx_path, inputs):
         # Convert the PyTorch model to ONNX format
