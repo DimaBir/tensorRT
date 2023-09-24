@@ -81,7 +81,7 @@ class DistilBERTModel:
 
     def infer_tensorrt(self, engine, inputs):
         # Perform inference using the TensorRT engine
-        inputs, outputs, bindings = [], [], []
+        trt_inputs, trt_outputs, bindings = [], [], []
         stream = cuda.Stream()
 
         if engine is None:
@@ -98,23 +98,23 @@ class DistilBERTModel:
             cuda_mem = cuda.mem_alloc(host_mem.nbytes)
             bindings.append(int(cuda_mem))
             if engine.binding_is_input(binding):
-                inputs.append({'host': host_mem, 'device': cuda_mem})
+                trt_inputs.append({'host': host_mem, 'device': cuda_mem})
             else:
-                outputs.append({'host': host_mem, 'device': cuda_mem})
+                trt_outputs.append({'host': host_mem, 'device': cuda_mem})
 
-        inputs[0]['host'][:] = inputs["input_ids"].cpu().numpy()
-        inputs[1]['host'][:] = inputs["attention_mask"].cpu().numpy()
-
-        # Transfer input data to the GPU
-        cuda.memcpy_htod_async(inputs[0]['device'], inputs[0]['host'], stream)
-        cuda.memcpy_htod_async(inputs[1]['device'], inputs[1]['host'], stream)
+        # Set the data for the inputs and Transfer input data to the GPU
+        trt_inputs[0]['host'][:] = inputs["input_ids"].cpu().numpy().ravel()
+        trt_inputs[1]['host'][:] = inputs["attention_mask"].cpu().numpy().ravel()
+        cuda.memcpy_htod_async(trt_inputs[0]['device'], trt_inputs[0]['host'], stream)
+        cuda.memcpy_htod_async(trt_inputs[1]['device'], trt_inputs[1]['host'], stream)
 
         # Run inference
         stream.synchronize()
         context.execute_async(bindings=bindings, stream_handle=stream.handle)
-        cuda.memcpy_dtoh_async(outputs[0]['host'], outputs[0]['device'], stream)
-        cuda.memcpy_dtoh_async(outputs[1]['host'], outputs[1]['device'], stream)
+        cuda.memcpy_dtoh_async(trt_outputs[0]['host'], trt_outputs[0]['device'], stream)
+        cuda.memcpy_dtoh_async(trt_outputs[1]['host'], trt_outputs[1]['device'], stream)
         stream.synchronize()
 
         # Return the output data
-        return outputs[0]['host'], outputs[1]['host']  # Return both outputs
+        return trt_outputs[0]['host'], trt_outputs[1]['host']  # Return both outputs
+
