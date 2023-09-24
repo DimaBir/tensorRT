@@ -1,5 +1,5 @@
 # Use an official TensorRT base image
-FROM nvcr.io/nvidia/tensorrt:latest
+FROM nvcr.io/nvidia/tensorrt:21.09-py3
 
 # Install system packages
 RUN apt-get update && apt-get install -y \
