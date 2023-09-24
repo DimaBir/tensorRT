@@ -42,7 +42,7 @@ def main():
 
     # Tokenize the input
     inputs = model.tokenize(question, context)
-    tokenizer = AutoTokenizer.from_pretrained(model.get_model_name())
+    # tokenizer = AutoTokenizer.from_pretrained(model.get_model_name())
 
     # Perform inference using PyTorch and measure the time taken
     start_time = time.time()
@@ -51,8 +51,8 @@ def main():
 
     # Convert PyTorch output to answer
     pytorch_answer = logits_to_answer(
-        output_pytorch.start_logits.squeeze().detach().numpy(),
-        output_pytorch.end_logits.squeeze().detach().numpy(),
+        output_pytorch.start_logits.squeeze().cpu().detach().numpy(),
+        output_pytorch.end_logits.squeeze().cpu().detach().numpy(),
         inputs['input_ids'].squeeze().tolist(),
         model.tokenizer
     )
