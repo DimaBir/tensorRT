@@ -26,24 +26,36 @@ class DistilBERTModel:
         # Convert the PyTorch model to ONNX format
         torch.onnx.export(self.model, (inputs["input_ids"], inputs["attention_mask"]), onnx_path, verbose=True, opset_version=11, input_names=['input_ids', 'attention_mask'], output_names=['output'])
 
-    def build_engine(self, onnx_path, fp16_mode=False):
-        # Build a TensorRT engine from the ONNX model
+    def build_engine(onnx_file_path, fp16_mode=False):
+        # Create a TensorRT logger
         TRT_LOGGER = trt.Logger(trt.Logger.WARNING)
-        with trt.Builder(TRT_LOGGER) as builder, builder.create_network(1) as network, trt.OnnxParser(network, TRT_LOGGER) as parser:
-            builder.fp16_mode = fp16_mode  # Set precision mode
-            builder.max_workspace_size = 1 << 28  # Set workspace size
-            builder.max_batch_size = 1  # Set batch size
 
-            # Parse the ONNX model to create a TensorRT network
-            with open(onnx_path, 'rb') as model:
-                if not parser.parse(model.read()):
-                    print('ERROR: Failed to parse the ONNX file.')
-                    for error in range(parser.num_errors):
-                        print(parser.get_error(error))
-                    return None
+        # Create a builder
+        builder = trt.Builder(TRT_LOGGER)
 
-            # Build and return the TensorRT engine
-            return builder.build_cuda_engine(network)
+        # Create a network
+        network = builder.create_network()
+
+        # Create a parser
+        parser = trt.OnnxParser(network, TRT_LOGGER)
+
+        # Parse the ONNX model
+        with open(onnx_file_path, 'rb') as model:
+            if not parser.parse(model.read()):
+                print('ERROR: Failed to parse the ONNX file.')
+                for error in range(parser.num_errors):
+                    print(parser.get_error(error))
+                return None
+
+        # Create a builder configuration object
+        config = builder.create_builder_config()
+
+        # Set the precision mode in the configuration
+        if fp16_mode and builder.platform_has_fast_fp16:
+            config.set_flag(trt.BuilderFlag.FP16)
+
+        # Build and return the engine
+        return builder.build_engine(network, config)
 
     def infer_tensorrt(self, engine, inputs):
         # Perform inference using the TensorRT engine
