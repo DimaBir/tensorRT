@@ -84,11 +84,6 @@ def main():
                                        model.tokenizer)
     print(f"TensorRT FP16 Answer: {trt_fp16_answer}")
 
-    # Print the outputs from different inference methods for comparison
-    logging.info("PyTorch Answer:", pytorch_answer)
-    logging.info("TensorRT FP32 Answer:", trt_fp32_answer)
-    logging.info("TensorRT FP16 Answer:", trt_fp16_answer)
-
 
 if __name__ == "__main__":
     main()
